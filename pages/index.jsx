@@ -78,8 +78,22 @@ export default function EierPlattform() {
       alert('Bitte Namen eingeben!');
       return;
     }
+    
+    // Bestand automatisch reduzieren
+    const neuerBestand = Math.max(0, eierAufLager - eierAnzahl);
+    setEierAufLager(neuerBestand);
+    localStorage.setItem('eierBestand', neuerBestand);
+    setEierInBestellung(0);
+    
     const nachricht = `🐓 *Neue Eierbestellung - Fredeggs*\n\n👤 Name: ${kundenName}${kundenAdresse ? `\n📍 Adresse: ${kundenAdresse}` : ''}\n\n🥚 Anzahl: ${eierAnzahl} Eier\n💰 Preis: ${(eierAnzahl * preisProEi).toFixed(2)} €\n\n${lieferart === 'abholen' ? '🏪 Selbst abholen' : `🚚 Lieferung${wunschzeit ? ` um ${wunschzeit} Uhr` : ''}`}\n\n${eierkartonsMitbringen ? '📦 Ich kann Eierkartons mitbringen' : ''}`;
     window.open(`https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`, '_blank');
+    
+    // Formular zurücksetzen
+    setEierAnzahl(0);
+    setKundenName('');
+    setKundenAdresse('');
+    setWunschzeit('');
+    setEierkartonsMitbringen(false);
   };
 
   const bewertungSenden = () => {
