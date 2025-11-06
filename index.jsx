@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Star, MapPin, Phone, Mail, Video, Send } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, Mail, Video, Send } from 'lucide-react';
 
 export default function EierPlattform() {
   const WHATSAPP_NUMMER = "4915168472345";
@@ -16,13 +16,29 @@ export default function EierPlattform() {
   const [kundenAdresse, setKundenAdresse] = useState('');
   const [eierAufLager, setEierAufLager] = useState(10);
   const [eierkartonsMitbringen, setEierkartonsMitbringen] = useState(false);
-  const [kartonsBedarf, setKartonsBedarf] = useState(true); // Admin kann das ändern
+  const [kartonsBedarf, setKartonsBedarf] = useState(true);
   
   // Admin-Bereich
   const [adminPasswort, setAdminPasswort] = useState('');
   const [istAngemeldet, setIstAngemeldet] = useState(false);
-  const [neuerBestand, setNeuerBestand] = useState(eierAufLager);
+  const [neuerBestand, setNeuerBestand] = useState(10);
   const ADMIN_PASSWORT = "Fredeggs2024";
+
+  // Lade gespeicherte Werte beim Start
+  useEffect(() => {
+    const gespeicherterBestand = localStorage.getItem('eierBestand');
+    const gespeicherterKartonsBedarf = localStorage.getItem('kartonsBedarf');
+    
+    if (gespeicherterBestand) {
+      const bestand = Number(gespeicherterBestand);
+      setEierAufLager(bestand);
+      setNeuerBestand(bestand);
+    }
+    
+    if (gespeicherterKartonsBedarf !== null) {
+      setKartonsBedarf(gespeicherterKartonsBedarf === 'true');
+    }
+  }, []);
 
   const adminLogin = () => {
     if (adminPasswort === ADMIN_PASSWORT) {
@@ -37,6 +53,7 @@ export default function EierPlattform() {
     setEierAufLager(neuerBestand);
     setEierInBestellung(0);
     localStorage.setItem('eierBestand', neuerBestand);
+    localStorage.setItem('kartonsBedarf', kartonsBedarf);
     alert(`Bestand aktualisiert auf ${neuerBestand} Eier!`);
   };
 
@@ -46,17 +63,14 @@ export default function EierPlattform() {
   };
 
   const besitzerInfo = {
-    name: "Familie Huber's Hühnerhof",
-    adresse: "Dorfstraße 42, 12345 Landheim",
-    telefon: "+49 123 456789",
-    email: "info@huehnerhof-huber.de",
-    inhaber: "Maria und Josef Huber",
+    name: "Fredeggs, Münster",
+    email: "Feldhege.Frederik@T-online.de",
     whatsapp: "+49 123 456789"
   };
 
   const videos = [
-    { id: 1, titel: "Unsere Haltungsart" },
-    { id: 2, titel: "Wie die Hühner gefüttert werden" }
+    { id: 1, titel: "Unsere Haltungsart", datei: "/videos/IMG_0089.Mp4" },
+    { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/IMG_0089.Mp4" }
   ];
 
   const bestellungAbsenden = () => {
@@ -64,8 +78,22 @@ export default function EierPlattform() {
       alert('Bitte Namen eingeben!');
       return;
     }
+    
+    // Bestand automatisch reduzieren
+    const neuerBestand = Math.max(0, eierAufLager - eierAnzahl);
+    setEierAufLager(neuerBestand);
+    localStorage.setItem('eierBestand', neuerBestand);
+    setEierInBestellung(0);
+    
     const nachricht = `🐓 *Neue Eierbestellung - Fredeggs*\n\n👤 Name: ${kundenName}${kundenAdresse ? `\n📍 Adresse: ${kundenAdresse}` : ''}\n\n🥚 Anzahl: ${eierAnzahl} Eier\n💰 Preis: ${(eierAnzahl * preisProEi).toFixed(2)} €\n\n${lieferart === 'abholen' ? '🏪 Selbst abholen' : `🚚 Lieferung${wunschzeit ? ` um ${wunschzeit} Uhr` : ''}`}\n\n${eierkartonsMitbringen ? '📦 Ich kann Eierkartons mitbringen' : ''}`;
     window.open(`https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`, '_blank');
+    
+    // Formular zurücksetzen
+    setEierAnzahl(0);
+    setKundenName('');
+    setKundenAdresse('');
+    setWunschzeit('');
+    setEierkartonsMitbringen(false);
   };
 
   const bewertungSenden = () => {
@@ -218,11 +246,18 @@ export default function EierPlattform() {
             <Video className="w-7 h-7" />
             Videos über unsere Hühner
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-2 gap-6">
             {videos.map((video) => (
-              <div key={video.id} className="border-2 border-amber-200 rounded-lg p-6">
+              <div key={video.id} className="border-2 border-amber-200 rounded-lg p-4">
                 <h3 className="font-semibold text-center mb-3">{video.titel}</h3>
-                <button className="w-full bg-amber-100 text-amber-800 py-2 rounded-md">▶ Ansehen</button>
+                <video 
+                  controls 
+                  className="w-full rounded-lg"
+                  poster="/videos/thumbnail.jpg"
+                >
+                  <source src={video.datei} type="video/mp4" />
+                  Dein Browser unterstützt keine Videos.
+                </video>
               </div>
             ))}
           </div>
@@ -258,30 +293,12 @@ export default function EierPlattform() {
               <div className="text-3xl">🐓</div>
               <div>
                 <h3 className="font-bold text-lg">{besitzerInfo.name}</h3>
-                <p className="text-gray-600">Inhaber: {besitzerInfo.inhaber}</p>
               </div>
             </div>
             
             <div className="flex items-center gap-3">
-              <MapPin className="w-6 h-6 text-amber-600" />
-              <span>{besitzerInfo.adresse}</span>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              <Phone className="w-6 h-6 text-amber-600" />
-              <a href={`tel:${besitzerInfo.telefon}`}>{besitzerInfo.telefon}</a>
-            </div>
-            
-            <div className="flex items-center gap-3">
               <Mail className="w-6 h-6 text-amber-600" />
-              <a href={`mailto:${besitzerInfo.email}`}>{besitzerInfo.email}</a>
-            </div>
-
-            <div className="flex items-center gap-3 mt-4 pt-4 border-t-2">
-              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              <a href={`https://wa.me/${besitzerInfo.whatsapp.replace(/[^0-9]/g, '')}`} className="font-semibold">WhatsApp: {besitzerInfo.whatsapp}</a>
+              <a href={`mailto:${besitzerInfo.email}`} className="text-blue-600 hover:underline">{besitzerInfo.email}</a>
             </div>
           </div>
         </div>
