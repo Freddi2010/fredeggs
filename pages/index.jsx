@@ -132,11 +132,7 @@ export default function EierPlattform() {
     window.open(`https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`, '_blank');
     
     // Formular zurücksetzen
-    setEierAnzahl(0);
-    setKundenName('');
-    setKundenAdresse('');
-    setWunschzeit('');
-    setEierkartonsMitbringen(false);
+
   };
 
   const bewertungSenden = () => {
@@ -270,7 +266,11 @@ export default function EierPlattform() {
               <span className="ml-3">Ich kann Eierkartons mitbringen</span>
             </div>
 
-            <button onClick={bestellungAbsenden} className="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700">
+       <button 
+  type="button"
+  onClick={bestellungAbsenden} 
+  className="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700"
+>
               Jetzt per WhatsApp bestellen
             </button>
 
