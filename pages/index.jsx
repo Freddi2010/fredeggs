@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Supabase Konfiguration
 const supabaseUrl = 'https://fvmkfpqstkadeihudcty.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2bWtmcHFzdGthZGVpaHVkY3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzYxODMsImV4cCI6MjA3ODExMjE4M30.4J0g_Fc9w7fNodK5-BIjV889-npNE1AhM2-0UA4ZccQ;
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2bWtmcHFzdGthZGVpaHVkY3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzYxODMsImV4cCI6MjA3ODExMjE4M30.4J0g_Fc9w7fNodK5-BIjV889-npNE1AhM2-0UA4ZccQ';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function EierPlattform() {
@@ -132,7 +132,11 @@ export default function EierPlattform() {
     window.open(`https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`, '_blank');
     
     // Formular zurücksetzen
-
+    setEierAnzahl(0);
+    setKundenName('');
+    setKundenAdresse('');
+    setWunschzeit('');
+    setEierkartonsMitbringen(false);
   };
 
   const bewertungSenden = () => {
@@ -266,7 +270,7 @@ export default function EierPlattform() {
               <span className="ml-3">Ich kann Eierkartons mitbringen</span>
             </div>
 
-<button onClick={bestellungAbsenden} className="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700">
+            <button onClick={bestellungAbsenden} className="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700">
               Jetzt per WhatsApp bestellen
             </button>
 
