@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Mail, Video, Send } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
+
+// Supabase Konfiguration
+const supabaseUrl = 'https://fvmkfpqstkadeihudcty.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ2bWtmcHFzdGthZGVpaHVkY3R5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzYxODMsImV4cCI6MjA3ODExMjE4M30.4J0g_Fc9w7fNodK5-BIjV889-npNE1AhM2-0UA4ZccQ';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function EierPlattform() {
   const WHATSAPP_NUMMER = "4915168472345";
@@ -24,21 +30,39 @@ export default function EierPlattform() {
   const [neuerBestand, setNeuerBestand] = useState(10);
   const ADMIN_PASSWORT = "Fredeggs2024";
 
-  // Lade gespeicherte Werte beim Start
+  // Lade gespeicherte Werte beim Start aus Supabase
   useEffect(() => {
-    const gespeicherterBestand = localStorage.getItem('eierBestand');
-    const gespeicherterKartonsBedarf = localStorage.getItem('kartonsBedarf');
+    ladeBestandAusSupabase();
     
-    if (gespeicherterBestand) {
-      const bestand = Number(gespeicherterBestand);
-      setEierAufLager(bestand);
-      setNeuerBestand(bestand);
-    }
+    // Echtzeit-Updates abonnieren
+    const channel = supabase
+      .channel('bestand-changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'bestand' }, 
+        () => {
+          ladeBestandAusSupabase();
+        }
+      )
+      .subscribe();
     
-    if (gespeicherterKartonsBedarf !== null) {
-      setKartonsBedarf(gespeicherterKartonsBedarf === 'true');
-    }
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
+  const ladeBestandAusSupabase = async () => {
+    const { data, error } = await supabase
+      .from('bestand')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    
+    if (data) {
+      setEierAufLager(data.eier_anzahl);
+      setNeuerBestand(data.eier_anzahl);
+      setKartonsBedarf(data.kartons_bedarf);
+    }
+  };
 
   const adminLogin = () => {
     if (adminPasswort === ADMIN_PASSWORT) {
@@ -49,12 +73,22 @@ export default function EierPlattform() {
     }
   };
 
-  const bestandAktualisieren = () => {
-    setEierAufLager(neuerBestand);
-    setEierInBestellung(0);
-    localStorage.setItem('eierBestand', neuerBestand);
-    localStorage.setItem('kartonsBedarf', kartonsBedarf);
-    alert(`Bestand aktualisiert auf ${neuerBestand} Eier!`);
+  const bestandAktualisieren = async () => {
+    const { error } = await supabase
+      .from('bestand')
+      .update({ 
+        eier_anzahl: neuerBestand,
+        kartons_bedarf: kartonsBedarf 
+      })
+      .eq('id', 1);
+    
+    if (error) {
+      alert('Fehler beim Speichern: ' + error.message);
+    } else {
+      setEierAufLager(neuerBestand);
+      setEierInBestellung(0);
+      alert(`Bestand aktualisiert auf ${neuerBestand} Eier!`);
+    }
   };
 
   const handleEierAnzahlChange = (anzahl) => {
@@ -73,16 +107,25 @@ export default function EierPlattform() {
     { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/IMG_0089.MP4" }
   ];
 
-  const bestellungAbsenden = () => {
+  const bestellungAbsenden = async () => {
     if (!kundenName) {
       alert('Bitte Namen eingeben!');
       return;
     }
     
-    // Bestand automatisch reduzieren
+    // Bestand automatisch reduzieren in Supabase
     const neuerBestand = Math.max(0, eierAufLager - eierAnzahl);
+    const { error } = await supabase
+      .from('bestand')
+      .update({ eier_anzahl: neuerBestand })
+      .eq('id', 1);
+    
+    if (error) {
+      alert('Fehler beim Aktualisieren des Bestands');
+      return;
+    }
+    
     setEierAufLager(neuerBestand);
-    localStorage.setItem('eierBestand', neuerBestand);
     setEierInBestellung(0);
     
     const nachricht = `🐓 *Neue Eierbestellung - Fredeggs*\n\n👤 Name: ${kundenName}${kundenAdresse ? `\n📍 Adresse: ${kundenAdresse}` : ''}\n\n🥚 Anzahl: ${eierAnzahl} Eier\n💰 Preis: ${(eierAnzahl * preisProEi).toFixed(2)} €\n\n${lieferart === 'abholen' ? '🏪 Selbst abholen' : `🚚 Lieferung${wunschzeit ? ` um ${wunschzeit} Uhr` : ''}`}\n\n${eierkartonsMitbringen ? '📦 Ich kann Eierkartons mitbringen' : ''}`;
