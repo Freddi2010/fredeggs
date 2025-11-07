@@ -266,11 +266,7 @@ export default function EierPlattform() {
               <span className="ml-3">Ich kann Eierkartons mitbringen</span>
             </div>
 
-       <button 
-  type="button"
-  onClick={bestellungAbsenden} 
-  className="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700"
->
+<button onClick={bestellungAbsenden} className="w-full bg-amber-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-amber-700">
               Jetzt per WhatsApp bestellen
             </button>
 
