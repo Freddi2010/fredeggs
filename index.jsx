@@ -104,7 +104,7 @@ export default function EierPlattform() {
 
   const videos = [
     { id: 1, titel: "Unsere Haltungsart", datei: "/videos/IMG_0089.MP4" },
-    { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/IMG_0089.MP4" }
+    { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/Fuetterung.mp4" }
   ];
 
   const bestellungAbsenden = async () => {
