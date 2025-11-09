@@ -23,7 +23,7 @@ export default function EierPlattform() {
   const [eierAufLager, setEierAufLager] = useState(10);
   const [eierkartonsMitbringen, setEierkartonsMitbringen] = useState(false);
   const [kartonsBedarf, setKartonsBedarf] = useState(true);
-
+  
   // Admin-Bereich
   const [adminPasswort, setAdminPasswort] = useState('');
   const [istAngemeldet, setIstAngemeldet] = useState(false);
@@ -104,39 +104,34 @@ export default function EierPlattform() {
 
   const videos = [
     { id: 1, titel: "Unsere Haltungsart", datei: "/videos/IMG_0089.MP4" },
-    { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/Fuetterung.mp4" }
+    { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/IMG_0089.MP4" }
   ];
 
-  // Angepasste Bestellfunktion für iOS & Desktop
   const bestellungAbsenden = async () => {
     if (!kundenName) {
       alert('Bitte Namen eingeben!');
       return;
     }
-
+    
+    // Bestand automatisch reduzieren in Supabase
     const neuerBestand = Math.max(0, eierAufLager - eierAnzahl);
     const { error } = await supabase
       .from('bestand')
       .update({ eier_anzahl: neuerBestand })
       .eq('id', 1);
-
+    
     if (error) {
       alert('Fehler beim Aktualisieren des Bestands');
       return;
     }
-
+    
     setEierAufLager(neuerBestand);
     setEierInBestellung(0);
-
+    
     const nachricht = `🐓 *Neue Eierbestellung - Fredeggs*\n\n👤 Name: ${kundenName}${kundenAdresse ? `\n📍 Adresse: ${kundenAdresse}` : ''}\n\n🥚 Anzahl: ${eierAnzahl} Eier\n💰 Preis: ${(eierAnzahl * preisProEi).toFixed(2)} €\n\n${lieferart === 'abholen' ? '🏪 Selbst abholen' : `🚚 Lieferung${wunschzeit ? ` um ${wunschzeit} Uhr` : ''}`}\n\n${eierkartonsMitbringen ? '📦 Ich kann Eierkartons mitbringen' : ''}`;
-
-    const waUrl = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-      ? `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMMER}&text=${encodeURIComponent(nachricht)}`
-      : `https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`;
-
-    // Direkt weiterleiten
-    window.location.href = waUrl;
-
+    window.open(`https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`, '_blank');
+    
+    // Formular zurücksetzen
     setEierAnzahl(0);
     setKundenName('');
     setKundenAdresse('');
@@ -144,21 +139,13 @@ export default function EierPlattform() {
     setEierkartonsMitbringen(false);
   };
 
-  // Bewertungsfunktion ebenfalls angepasst
   const bewertungSenden = () => {
     if (!name || !bewertungstext) {
       alert('Bitte Name und Bewertung eingeben!');
       return;
     }
-
     const nachricht = `⭐ *Neue Bewertung - Fredeggs*\n\n👤 Von: ${name}\n⭐ Bewertung: ${bewertung} Sterne\n\n💬 Nachricht:\n${bewertungstext}`;
-
-    const waUrl = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-      ? `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMMER}&text=${encodeURIComponent(nachricht)}`
-      : `https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`;
-
-    window.location.href = waUrl;
-
+    window.open(`https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`, '_blank');
     setBewertungstext('');
     setName('');
   };
@@ -174,6 +161,20 @@ export default function EierPlattform() {
           </div>
         </div>
       </header>
+
+      {/* Hero-Bild mit bratenden Eiern */}
+      <div className="w-full h-64 md:h-96 relative overflow-hidden">
+        <img 
+          src="/images/bratende-eier.jpg" 
+          alt="Frische Eier in der Pfanne" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-amber-900/50 to-transparent flex items-end justify-center pb-8">
+          <h2 className="text-white text-3xl md:text-4xl font-bold drop-shadow-lg">
+            Frische Eier aus Ihrer Nachbarschaft 🥚
+          </h2>
+        </div>
+      </div>
 
       <div className="max-w-6xl mx-auto p-6 space-y-8">
         <div className="bg-white rounded-xl shadow-lg p-8">
@@ -359,7 +360,7 @@ export default function EierPlattform() {
           </div>
         </div>
 
-        {/* Admin-Bereich */}
+        {/* Admin-Bereich ganz unten */}
         <div className="bg-white rounded-xl shadow-lg p-8 border-4 border-amber-600">
           <h2 className="text-2xl font-bold text-amber-800 mb-4 flex items-center gap-2">
             🔐 Admin-Bereich
