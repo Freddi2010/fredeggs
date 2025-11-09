@@ -134,7 +134,6 @@ export default function EierPlattform() {
       ? `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMMER}&text=${encodeURIComponent(nachricht)}`
       : `https://wa.me/${WHATSAPP_NUMMER}?text=${encodeURIComponent(nachricht)}`;
 
-    // Direkt weiterleiten
     window.location.href = waUrl;
 
     setEierAnzahl(0);
@@ -174,6 +173,20 @@ export default function EierPlattform() {
           </div>
         </div>
       </header>
+
+      {/* Hero-Bild mit bratenden Eiern */}
+      <div className="w-full h-64 md:h-96 relative overflow-hidden">
+        <img 
+          src="/images/bratende-eier.jpg" 
+          alt="Frische Eier in der Pfanne" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-amber-900/50 to-transparent flex items-end justify-center pb-8">
+          <h2 className="text-white text-3xl md:text-4xl font-bold drop-shadow-lg">
+            Frische Eier aus Ihrer Nachbarschaft 🥚
+          </h2>
+        </div>
+      </div>
 
       <div className="max-w-6xl mx-auto p-6 space-y-8">
         <div className="bg-white rounded-xl shadow-lg p-8">
