@@ -9,7 +9,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function EierPlattform() {
   const WHATSAPP_NUMMER = "4915168472345";
-  const preisProEi = 0.40;
+  const preisProEi = 0.35;
 
   const [eierAnzahl, setEierAnzahl] = useState(0);
   const [eierInBestellung, setEierInBestellung] = useState(0);
