@@ -217,7 +217,7 @@ export default function EierPlattform() {
               <label className="block text-gray-700 font-semibold mb-2">Anzahl der Eier: {eierAnzahl} Stück</label>
               <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-xl font-bold text-amber-800">
-                  Preis: {(eierAnzahl * preisProEi).toFixed(2)} € <span className="text-sm font-normal text-gray-600">({preisProEi} € pro Ei PREISSENKUNG)</span>
+                  Preis: {(eierAnzahl * preisProEi).toFixed(2)} € <span className="text-sm font-normal text-gray-600">(0,35 € pro Ei PREISSENKUNG)</span>
                 </p>
               </div>
               <input 
