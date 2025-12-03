@@ -194,7 +194,7 @@ export default function EierPlattform() {
   };
 
   const storyIcons = {
-    1: "😱", 2: "🦊", 3: "🔍", 4: "👼", 5: "💇‍♀️", 6: "🥾",
+    1: "😱", 2: "🦊", 3: "🔍", 4: "👼", 5: "💇♀️", 6: "🥾",
     7: "😂", 8: "🤣", 9: "📺", 10: "🐰", 11: "👓", 12: "📜",
     13: "🔎", 14: "🦆", 15: "🍽️", 16: "🐌", 17: "💡", 18: "✉️",
     19: "🤔", 20: "🌽", 21: "✨", 22: "🍂", 23: "🪺", 24: "🎅"
@@ -208,10 +208,12 @@ export default function EierPlattform() {
   };
 
   const openDoor = (day) => {
-    const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
-    if (!openedDoors.includes(day)) {
-      openedDoors.push(day);
-      localStorage.setItem('openedDoors', JSON.stringify(openedDoors));
+    if (typeof window !== 'undefined') {
+      const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+      if (!openedDoors.includes(day)) {
+        openedDoors.push(day);
+        localStorage.setItem('openedDoors', JSON.stringify(openedDoors));
+      }
     }
     
     setCurrentStory({
@@ -229,7 +231,9 @@ export default function EierPlattform() {
     
     if (currentMonth !== 12) return null;
     
-    const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+    const openedDoors = typeof window !== 'undefined' 
+      ? JSON.parse(localStorage.getItem('openedDoors') || '[]')
+      : [];
     const numbers = Array.from({length: 24}, (_, i) => i + 1);
     numbers.sort(() => Math.random() - 0.5);
 
