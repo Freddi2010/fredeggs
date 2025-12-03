@@ -29,6 +29,10 @@ export default function EierPlattform() {
   const [istAngemeldet, setIstAngemeldet] = useState(false);
   const [neuerBestand, setNeuerBestand] = useState(10);
   const ADMIN_PASSWORT = "Fredeggs2024";
+  
+  // Adventskalender
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [currentStory, setCurrentStory] = useState({ day: 0, text: '', icon: '' });
 
   // Lade gespeicherte Werte beim Start aus Supabase
   useEffect(() => {
@@ -107,7 +111,6 @@ export default function EierPlattform() {
     { id: 2, titel: "Wie die Hühner gefüttert werden", datei: "/videos/Fuetterung.mp4" }
   ];
 
-  // Angepasste Bestellfunktion für iOS & Desktop
   const bestellungAbsenden = async () => {
     if (!kundenName) {
       alert('Bitte Namen eingeben!');
@@ -143,7 +146,6 @@ export default function EierPlattform() {
     setEierkartonsMitbringen(false);
   };
 
-  // Bewertungsfunktion ebenfalls angepasst
   const bewertungSenden = () => {
     if (!name || !bewertungstext) {
       alert('Bitte Name und Bewertung eingeben!');
@@ -158,66 +160,200 @@ export default function EierPlattform() {
 
     window.location.href = waUrl;
 
-    setBewertungstext('');
     setName('');
+    setBewertung(5);
+    setBewertungstext('');
+  };
+
+  // Adventskalender Daten
+  const stories = {
+    1: "Im Hühnerstall herrscht Panik: Die vier Advents-Eier sind verschwunden! Berta, Dotti, Henriette und Frieda gackern durcheinander.",
+    2: "Berta verdächtigt sofort den Fuchs Felix. Dotti schüttelt den Kopf: \"Der frisst Eier sofort!\"",
+    3: "Die Hühner-Detektivinnen starten ihre Suche. Henriette findet eine goldene Feder beim Zaun!",
+    4: "\"Das ist vom Weihnachtsengel!\", ruft Frieda. Berta verdreht die Augen: \"Das ist von Ute, der Nachbarshenne!\"",
+    5: "Sie verhören Ute im Nachbargehege. \"Keine Zeit für Eierklau, ich muss zum Hühnerfriseur!\"",
+    6: "Am Nikolaustag finden sie einen Stiefel voller Körner. Berta futtert sofort los – vielleicht eine Falle?",
+    7: "Verdächtiges Kichern im Stall! Sie erwischen Hahn Hermann beim Eierlegen-Üben.",
+    8: "Hermann wird rot wie sein Kamm. Die Hühner lachen sich die Federn aus dem Gefieder!",
+    9: "Berta hat eine Theorie: \"Die Eier haben sich selbst versteckt!\" Frieda seufzt: \"Zu viele Krimis geguckt...\"",
+    10: "Mysteriöse Pfotenabdrücke im Gehege! Das Kaninchen Klaus wird verdächtigt.",
+    11: "Klaus protestiert empört: \"Ich esse nur Karotten!\" Er hoppelt beleidigt davon und vergisst seine Brille.",
+    12: "Mit Klaus' Brille entdecken sie eine Botschaft: \"Die Eier sind näher als ihr denkt!\" Wer war das?",
+    13: "Berta untersucht die Schrift mit Lupe. \"Das ist eindeutig Gänseschrift!\"",
+    14: "Gans Gisela lacht sich halbtot: \"Ich bin viel zu faul zum Eierverstecken!\" Drei Federn fallen aus.",
+    15: "Henriette will systematisch suchen. Dotti: \"Aber erst nach dem Mittagessen!\"",
+    16: "Nach 47 Schnecken durchwühlen sie alles. Kompost, Stroh, Futtertröge – nichts!",
+    17: "Frieda hat eine Erleuchtung: \"Vielleicht hat jemand die Eier FÜR uns versteckt?\" Das ergibt Sinn!",
+    18: "Ein Zettel am Stalltor: \"Findet eure 4 Eier bis Heiligabend! Eure Weihnachtsfee.\" Die Hühner sind baff!",
+    19: "\"Eine Weihnachtsfee für Hühner?\", fragt Dotti. Berta nickt: \"Warum nicht?\"",
+    20: "Sie teilen das Gehege in vier Suchzonen. Wer zuerst sein Ei findet, kriegt extra Mais!",
+    21: "Henriette findet ihr Ei hinter dem Wassertrog! Es glänzt golden in der Sonne.",
+    22: "Dotti entdeckt ihres unter Laub, Frieda ihres im Futterkasten. Nur Berta sucht noch verzweifelt!",
+    23: "Berta findet ihr Ei in ihrem eigenen Nest. Sie hatte die ganze Zeit darauf gesessen!",
+    24: "Bauer Fritz gesteht: ER war die Weihnachtsfee! Alle gackern glücklich bis Mitternacht. 🎄✨"
+  };
+
+  const storyIcons = {
+    1: "😱", 2: "🦊", 3: "🔍", 4: "👼", 5: "💇‍♀️", 6: "🥾",
+    7: "😂", 8: "🤣", 9: "📺", 10: "🐰", 11: "👓", 12: "📜",
+    13: "🔎", 14: "🦆", 15: "🍽️", 16: "🐌", 17: "💡", 18: "✉️",
+    19: "🤔", 20: "🌽", 21: "✨", 22: "🍂", 23: "🪺", 24: "🎅"
+  };
+
+  const doorEmojis = {
+    1: "🐔", 2: "🐓", 3: "🐤", 4: "🐥", 5: "🐣", 6: "🥚",
+    7: "🪺", 8: "🌾", 9: "🌽", 10: "🐰", 11: "🦊", 12: "📜",
+    13: "🔍", 14: "🦆", 15: "🍂", 16: "🐌", 17: "💡", 18: "✉️",
+    19: "🎄", 20: "⭐", 21: "✨", 22: "🎁", 23: "🔔", 24: "🎅"
+  };
+
+  const openDoor = (day) => {
+    const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+    if (!openedDoors.includes(day)) {
+      openedDoors.push(day);
+      localStorage.setItem('openedDoors', JSON.stringify(openedDoors));
+    }
+    
+    setCurrentStory({
+      day: day,
+      text: stories[day],
+      icon: storyIcons[day]
+    });
+    setShowStoryModal(true);
+  };
+
+  const renderAdventCalendar = () => {
+    const heute = new Date();
+    const currentDay = heute.getDate();
+    const currentMonth = heute.getMonth() + 1;
+    
+    if (currentMonth !== 12) return null;
+    
+    const openedDoors = JSON.parse(localStorage.getItem('openedDoors') || '[]');
+    const numbers = Array.from({length: 24}, (_, i) => i + 1);
+    numbers.sort(() => Math.random() - 0.5);
+
+    return (
+      <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 py-12 mb-8">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-center text-yellow-400 mb-3" style={{textShadow: '3px 3px 6px rgba(0,0,0,0.7)'}}>
+            🎄 Hühner-Adventskalender 🐔
+          </h1>
+          <p className="text-center text-orange-300 text-lg mb-8" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.7)'}}>
+            Die große Eiersuche von Berta, Dotti, Henriette und Frieda
+          </p>
+          
+          <div className="grid grid-cols-4 md:grid-cols-6 gap-3 max-w-4xl mx-auto">
+            {numbers.map(num => {
+              const canOpen = num <= currentDay;
+              const isActive = num === currentDay && !openedDoors.includes(num);
+              const isOpened = openedDoors.includes(num);
+              
+              return (
+                <div 
+                  key={num}
+                  onClick={() => canOpen && openDoor(num)}
+                  className={`
+                    aspect-[0.87] rounded-xl border-4 flex flex-col items-center justify-center relative overflow-hidden
+                    ${!canOpen ? 'bg-gradient-to-br from-gray-600 to-gray-800 border-gray-500 opacity-60 cursor-not-allowed' : ''}
+                    ${isActive ? 'bg-gradient-to-br from-yellow-400 to-orange-400 border-red-900 animate-pulse cursor-pointer hover:scale-105' : ''}
+                    ${isOpened && canOpen ? 'bg-gradient-to-br from-green-700 to-green-900 border-green-400 cursor-pointer hover:scale-105' : ''}
+                    ${!isActive && !isOpened && canOpen ? 'bg-gradient-to-br from-red-700 to-red-900 border-yellow-400 cursor-pointer hover:scale-105' : ''}
+                    transition-transform duration-300
+                  `}
+                >
+                  <div className="text-4xl md:text-5xl mb-2">
+                    {doorEmojis[num]}
+                  </div>
+                  <div className={`
+                    text-3xl md:text-4xl font-bold px-3 py-1 rounded-lg
+                    ${isActive ? 'bg-red-900 text-yellow-400' : 'bg-black bg-opacity-80 text-yellow-400'}
+                    border-2 border-yellow-400
+                  `} style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>
+                    {num}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-50 to-orange-50">
-      <header className="bg-amber-600 text-white p-6 shadow-lg">
-        <div className="max-w-6xl mx-auto flex items-center gap-4">
-          <div className="text-6xl">🐓</div>
-          <div>
-            <h1 className="text-4xl font-bold">FredEggs</h1>
-            <p className="text-amber-100">Direkt aus Ihrer Nachbarschaft</p>
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+      {/* Story Modal */}
+      {showStoryModal && (
+        <>
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-80 z-50"
+            onClick={() => setShowStoryModal(false)}
+          />
+          <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-br from-yellow-50 to-orange-50 p-8 rounded-3xl max-w-lg w-11/12 z-50 border-8 border-amber-800 shadow-2xl">
+            <div className="text-6xl text-center mb-4">{currentStory.icon}</div>
+            <h2 className="text-3xl font-bold text-center text-red-900 mb-6">
+              {currentStory.day}. Dezember
+            </h2>
+            <p className="text-xl leading-relaxed text-gray-800 mb-8">
+              {currentStory.text}
+            </p>
+            <button 
+              onClick={() => setShowStoryModal(false)}
+              className="w-full bg-gradient-to-r from-yellow-400 to-orange-400 text-red-900 py-4 px-8 text-xl font-bold rounded-xl hover:scale-105 transition-transform"
+            >
+              Schließen
+            </button>
           </div>
+        </>
+      )}
+
+      {/* Adventskalender */}
+      {renderAdventCalendar()}
+
+      {/* Header */}
+      <header className="bg-amber-600 text-white py-6 shadow-lg">
+        <div className="container mx-auto px-4">
+          <h1 className="text-4xl font-bold text-center">🥚 Fredeggs - Frische Eier vom Hof 🐔</h1>
+          <p className="text-center mt-2 text-lg">Bestellen Sie jetzt Ihre frischen Bio-Eier!</p>
         </div>
       </header>
 
-      {/* Hero-Bild mit bratenden Eiern */}
-      <div className="w-full h-64 md:h-96 relative overflow-hidden">
-        <img 
-          src="/images/bratende-eier.jpg" 
-          alt="Frische Eier in der Pfanne" 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-amber-900/50 to-transparent flex items-end justify-center pb-8">
-          <h2 className="text-white text-3xl md:text-4xl font-bold drop-shadow-lg">
-            Frische Eier aus Ihrer Nachbarschaft 🥚
-          </h2>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto p-6 space-y-8">
-        <div className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-amber-800 mb-6">Eier bestellen</h2>
-          
-          <div className="mb-6 p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-            <p className="text-lg font-semibold text-green-800">
-              📦 Aktuell auf Lager: <span className="text-2xl">{eierAufLager}</span> frische Eier
-            </p>
-            <p className="text-md text-green-700 mt-2">
-              🛒 Davon bestellt: <span className="text-xl font-semibold">{eierInBestellung}</span> Eier
-            </p>
-            <p className="text-md text-green-700 mt-1">
-              ✅ Noch verfügbar: <span className="text-xl font-semibold">{Math.max(0, eierAufLager - eierInBestellung)}</span> Eier
-            </p>
+      <main className="container mx-auto px-4 py-8">
+        {/* Bestandsanzeige */}
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-amber-800">Verfügbare Eier</h2>
+              <p className="text-gray-600">Aktueller Bestand</p>
+            </div>
+            <div className="text-right">
+              <p className="text-5xl font-bold text-amber-600">{eierAufLager}</p>
+              <p className="text-gray-500">Stück</p>
+            </div>
           </div>
-
           {kartonsBedarf && (
-            <div className="mb-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-              <p className="text-lg font-semibold text-blue-800">
-                ℹ️ Wir haben aktuell Bedarf an Eierkartons!
-              </p>
+            <div className="mt-4 p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+              <p className="text-blue-800">📦 <strong>Eierkartons werden benötigt!</strong></p>
             </div>
           )}
+          {eierInBestellung > 0 && (
+            <div className="mt-4 p-3 bg-green-50 border-2 border-green-200 rounded-lg">
+              <p className="text-green-800">📦 In Bestellung: {eierInBestellung} Eier</p>
+            </div>
+          )}
+        </div>
 
+        {/* Bestellformular */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
+          <h2 className="text-3xl font-bold text-amber-800 mb-6">Jetzt bestellen</h2>
+          
           <div className="space-y-6">
             <div>
               <label className="block text-gray-700 font-semibold mb-2">Anzahl der Eier: {eierAnzahl} Stück</label>
               <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
                 <p className="text-xl font-bold text-amber-800">
-                  Preis: {(eierAnzahl * preisProEi).toFixed(2)} € <span className="text-sm font-normal text-gray-600">(0,35 € pro Ei PREISSENKUNG)</span>
+                  Preis: {(eierAnzahl * preisProEi).toFixed(2)} € <span className="text-sm font-normal text-gray-600">({preisProEi.toFixed(2)} € pro Ei PREISSENKUNG)</span>
                 </p>
               </div>
               <input 
@@ -231,15 +367,9 @@ export default function EierPlattform() {
               />
               <div className="flex justify-between text-sm text-gray-500 mt-1">
                 <span>0</span>
-                <span>2</span>
-                <span>4</span>
-                <span>6</span>
-                <span>8</span>
+                <span>5</span>
                 <span>10</span>
-                <span>12</span>
-                <span>14</span>
-                <span>16</span>
-                <span>18</span>
+                <span>15</span>
                 <span>20</span>
               </div>
             </div>
@@ -310,7 +440,8 @@ export default function EierPlattform() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        {/* Videos */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-amber-800 mb-6 flex items-center gap-2">
             <Video className="w-7 h-7" />
             Videos über unsere Hühner
@@ -332,7 +463,8 @@ export default function EierPlattform() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        {/* Bewertung */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-amber-800 mb-6">Bewertung abgeben</h2>
           <div className="space-y-4">
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full border-2 p-3 rounded-lg" placeholder="Ihr Name" />
@@ -355,7 +487,8 @@ export default function EierPlattform() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-8">
+        {/* Kontakt */}
+        <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
           <h2 className="text-2xl font-bold text-amber-800 mb-6">Kontakt</h2>
           <div className="space-y-4">
             <div className="flex items-start gap-3">
@@ -380,58 +513,32 @@ export default function EierPlattform() {
           
           {!istAngemeldet ? (
             <div className="space-y-4">
-              <p className="text-gray-600">Melde dich an, um den Eierbestand zu aktualisieren</p>
               <input 
                 type="password" 
                 value={adminPasswort} 
                 onChange={(e) => setAdminPasswort(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && adminLogin()}
-                className="w-full border-2 border-gray-300 rounded-lg p-3" 
-                placeholder="Passwort eingeben" 
+                className="w-full border-2 p-3 rounded-lg" 
+                placeholder="Admin-Passwort" 
               />
-              <button 
-                onClick={adminLogin}
-                className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold hover:bg-amber-700"
-              >
+              <button onClick={adminLogin} className="w-full bg-amber-600 text-white py-3 rounded-lg font-bold hover:bg-amber-700">
                 Anmelden
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 bg-green-50 border-2 border-green-200 rounded-lg">
-                <p className="text-green-800 font-semibold">✓ Erfolgreich angemeldet!</p>
-              </div>
-              
-              <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-                <p className="text-blue-800">
-                  📦 Aktueller Bestand: <span className="font-bold text-xl">{eierAufLager}</span> Eier
-                </p>
-                <p className="text-blue-700 mt-1">
-                  🛒 Davon bestellt: <span className="font-semibold">{eierInBestellung}</span> Eier
-                </p>
+              <div>
+                <label className="block mb-2 font-semibold">Neuer Bestand:</label>
+                <input 
+                  type="number" 
+                  value={neuerBestand} 
+                  onChange={(e) => setNeuerBestand(Number(e.target.value))}
+                  className="w-full border-2 p-3 rounded-lg" 
+                />
               </div>
               
               <div>
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Neuer Bestand: {neuerBestand} Eier
-                </label>
-                <input 
-                  type="range" 
-                  min="0" 
-                  max="100" 
-                  value={neuerBestand} 
-                  onChange={(e) => setNeuerBestand(Number(e.target.value))}
-                  className="w-full h-3 bg-amber-200 rounded-lg" 
-                />
-                <div className="flex justify-between text-sm text-gray-500 mt-1">
-                  <span>0</span>
-                  <span>50</span>
-                  <span>100</span>
-                </div>
-              </div>
-              
-              <div className="p-4 bg-gray-50 border-2 border-gray-200 rounded-lg">
-                <p className="text-gray-800 font-semibold mb-3">Bedarf an Eierkartons:</p>
+                <label className="block mb-2 font-semibold">Eierkartons benötigt?</label>
                 <div className="flex gap-4">
                   <button 
                     onClick={() => setKartonsBedarf(true)}
@@ -464,7 +571,7 @@ export default function EierPlattform() {
             </div>
           )}
         </div>
-      </div>
+      </main>
 
       <footer className="bg-amber-800 text-white text-center p-6">
         <p>© 2024 Fredeggs 🐔</p>
